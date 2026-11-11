@@ -10,6 +10,8 @@ export default defineConfig(
             entry: resolve(import.meta.dirname, "src/native-entry.ts"),
             outDir: resolve(import.meta.dirname, "dist-native"),
             name: "game",
+            // Windows desktop builds run on Chakra, which needs es2017 (set by build:desktop).
+            target: process.env.LOONY_NATIVE_TARGET,
         }),
         { define: { __LOONY_START_MODE__: JSON.stringify(process.env.LOONY_START_MODE ?? "") } }
     )

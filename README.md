@@ -86,7 +86,8 @@ the `<title>` in `index.html`.
 | `pnpm dev` | Dev server with hot reload |
 | `pnpm build:web` | Production web build in `dist/` (host it on any static web server) |
 | `pnpm preview` | Serve `dist/` locally |
-| `pnpm build:desktop` | Desktop app in `build/desktop/` (see below) |
+| `pnpm build:desktop` | Desktop app for this computer in `build/desktop/` (see below) |
+| `pnpm build:desktop:windows` | Windows app cross-compiled from Linux, in `build/desktop-windows/` |
 | `pnpm build:quest` | Meta Quest APK (see below) |
 | `pnpm typecheck` / `pnpm test` | TypeScript check / unit tests |
 
@@ -96,12 +97,27 @@ the `<title>` in `index.html`.
 Babylon Native hosts. Before the first native build, fetch Babylon Native in the engine:
 `(cd ../loony-engine && git submodule update --init native/external/BabylonNative)`.
 
-**Desktop** (`pnpm build:desktop`): builds the executable and copies `game.js` and `public/` beside
-it. It needs CMake, a C++20 compiler and, on Linux, the X11 and JavaScriptCore development packages
-(Debian/Ubuntu: `libx11-dev libjavascriptcoregtk-4.1-dev`; Fedora: `libX11-devel javascriptcoregtk4.1-devel`).
-The first build compiles Babylon Native and takes a while. It boots the FPS demo
-(`LOONY_START_MODE=vr pnpm build:desktop` boots the VR one). Linux is supported today; Windows and
-macOS hosts are planned.
+**Desktop** (`pnpm build:desktop`): builds the executable for the computer you run it on and
+copies `game.js` and `public/` beside it; ship that whole folder. It needs CMake and a C++20
+compiler: Visual Studio 2022 on Windows; on Linux also the X11 and JavaScriptCore development
+packages (Debian/Ubuntu: `libx11-dev libjavascriptcoregtk-4.1-dev`; Fedora: `libX11-devel
+javascriptcoregtk4.1-devel`). The first build compiles Babylon Native and takes a while. It boots
+the FPS demo (`LOONY_START_MODE=vr` boots the VR one). macOS is planned.
+
+**Windows from Linux** (`pnpm build:desktop:windows`): cross-compiles the `.exe` with clang-cl. It
+needs LLVM (clang-cl, lld-link, llvm-rc, llvm-lib), Ninja, and the Windows SDK unpacked by
+[xwin](https://github.com/Jake-Shadle/xwin):
+
+```bash
+cargo install xwin
+xwin --accept-license splat --output ~/xwin     # or set XWIN_DIR to another folder
+```
+
+The Windows app runs on any Windows 10/11 PC with no installer or redistributable. It uses
+Windows' built-in JavaScript engine (Chakra), so the bundle is compiled down to ES2017
+automatically. For Steam Deck and other Proton players, ship the Linux build: Proton does not
+include Chakra. If the app does not start, run it from a terminal with `LOONY_HOST_TRACE=1` set to
+see how far it gets.
 
 **Meta Quest** (`pnpm build:quest`): needs the Android SDK and NDK. It builds a debug APK that boots
 the VR demo; install it with `adb install -r <apk path>`.
