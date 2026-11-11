@@ -1,0 +1,59 @@
+{
+    "name": "my-loony-game",
+    "version": "0.1.0",
+    "private": true,
+    "description": "A game built on the loony engine",
+    "loony": {
+        "title": "My Loony Game",
+        "appId": "com.example.myloonygame",
+        "executableName": "MyLoonyGame"
+    },
+    "type": "module",
+    "packageManager": "pnpm@10.33.2",
+    "engines": {
+        "node": ">=22"
+    },
+    "scripts": {
+        "preinstall": "node scripts/check-engine.mjs",
+        "dev": "vite",
+        "build:web": "vite build",
+        "preview": "vite preview",
+        "build:desktop": "node scripts/build-desktop.mjs",
+        "build:quest": "node scripts/build-quest.mjs",
+        "typecheck": "tsc --noEmit",
+        "test": "vitest run",
+        "build:native": "vite build --config vite.native.config.ts"
+    },
+    "dependencies": {
+        "@babylonjs/core": "^9.35.0",
+        "@babylonjs/gui": "^9.35.0",
+        "@babylonjs/loaders": "^9.35.0",
+        "@babylonjs/materials": "^9.35.0",
+        "@loony/loony": "link:../loony-engine/packages/loony",
+        "@loony/loony-gamepad-input": "link:../loony-engine/packages/loony-gamepad-input",
+        "@loony/loony-gameplay": "link:../loony-engine/packages/loony-gameplay",
+        "@loony/loony-gameplay-ai": "link:../loony-engine/packages/loony-gameplay-ai",
+        "@loony/loony-gameplay-fps": "link:../loony-engine/packages/loony-gameplay-fps",
+        "@loony/loony-looks": "link:../loony-engine/packages/loony-looks"
+    },
+    "devDependencies": {
+        "@types/node": "^22.20.0",
+        "@webgpu/types": "^0.1.51",
+        "happy-dom": "^20.5.0",
+        "typescript": "6.0.3",
+        "vite": "^6.4.3",
+        "vitest": "^4.1.5"
+    },
+    "pnpm": {
+        "overrides": {
+            "@babylonjs/core": "9.35.0",
+            "@babylonjs/gui": "9.35.0",
+            "@babylonjs/loaders": "9.35.0",
+            "@babylonjs/materials": "9.35.0",
+            "typescript": "6.0.3"
+        },
+        "onlyBuiltDependencies": [
+            "esbuild"
+        ]
+    }
+}

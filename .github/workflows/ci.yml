@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      # The engine lives beside the game. For a private engine repository, add a token secret
+      # with read access and use it in the URL below.
+      - name: Engine beside the game
+        env:
+          LOONY_ENGINE_TOKEN: ${{ secrets.LOONY_ENGINE_TOKEN }}
+        run: git clone --depth 1 "https://x-access-token:${LOONY_ENGINE_TOKEN}@github.com/yuripourre/loony-engine.git" ../loony-engine
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+      - run: (cd ../loony-engine && pnpm install --frozen-lockfile)
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build:web
