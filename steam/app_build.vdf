@@ -11,5 +11,6 @@
 	{
 		"@@DEPOT_WINDOWS@@" "depot_build_windows.vdf"
 		"@@DEPOT_LINUX@@" "depot_build_linux.vdf"
+		"@@DEPOT_MAC@@" "depot_build_macos.vdf"
 	}
 }

@@ -1,8 +1,7 @@
 // `pnpm deploy:itch`: upload builds to itch.io with Butler.
 //
-//   pnpm deploy:itch                    web + Windows + Linux (default)
-//   pnpm deploy:itch:web                web only
-//   pnpm deploy:itch:desktop            desktop zips only
+//   pnpm deploy:itch                    web + desktop targets for this OS (+ Windows zip from Linux/mac)
+//   pnpm deploy:itch --mac              macOS .app zip (build on macOS)
 //   pnpm deploy:itch --build            build selected targets first
 //   pnpm deploy:itch --dry-run          print planned butler push commands
 //
@@ -11,6 +10,7 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { assertItchConfig, loadLoonyConfig } from "./lib/loony-config.mjs";
 import { commandOnPath, run } from "./lib/run.mjs";
+import { zipAppBundle } from "./lib/zip-app.mjs";
 import { zipDirectory } from "./lib/zip-dir.mjs";
 
 const argv = process.argv.slice(2);
@@ -20,7 +20,8 @@ const flags = new Set(argv.filter((a) => a.startsWith("--") && a !== "--dry-run"
 
 const wantWeb = flags.has("--web") || flags.size === 0;
 const wantWindows = flags.has("--windows") || flags.size === 0;
-const wantLinux = flags.has("--linux") || flags.size === 0;
+const wantLinux = flags.has("--linux") || (flags.size === 0 && process.platform === "linux");
+const wantMac = flags.has("--mac") || (flags.size === 0 && process.platform === "darwin");
 
 const { root, loony } = loadLoonyConfig();
 const itch = assertItchConfig(loony);
@@ -29,27 +30,60 @@ const releaseDir = join(root, "build/release");
 const distDir = join(root, "dist");
 const windowsDir = join(root, "build/desktop-windows");
 const linuxDir = join(root, "build/desktop");
+const macDesktopDir = join(root, "build/desktop");
 
 function itchTarget(channel) {
     return `${itch.user}/${itch.game}:${channel}`;
 }
 
-function desktopExePath(dir, exeName, label) {
-    return join(dir, label === "windows" ? `${exeName}.exe` : exeName);
+function macAppBundlePath() {
+    const appName = `${loony.executableName}.app`;
+    const candidates = [
+        join(macDesktopDir, "Release", appName),
+        join(macDesktopDir, appName),
+    ];
+    return candidates.find((p) => existsSync(p));
 }
 
 function assertDesktopBuild(dir, exeName, label) {
-    const exePath = desktopExePath(dir, exeName, label);
+    const exePath = join(dir, label === "windows" ? `${exeName}.exe` : exeName);
     if (!existsSync(dir) || !existsSync(exePath)) {
         console.error(`Missing ${label} desktop build at ${dir} (expected ${exePath}). Run build first or pass --build.`);
         process.exit(1);
     }
 }
 
+function assertMacBuild() {
+    const bundle = macAppBundlePath();
+    if (!bundle) {
+        console.error(`Missing macOS build at ${macDesktopDir} (expected ${loony.executableName}.app). Build on macOS or pass --build.`);
+        process.exit(1);
+    }
+    const binary = join(bundle, "Contents/MacOS", loony.executableName);
+    if (!existsSync(binary)) {
+        console.error(`Missing macOS binary inside ${bundle}.`);
+        process.exit(1);
+    }
+    return bundle;
+}
+
 function buildIfNeeded() {
     if (wantWeb) run("pnpm", ["run", "build:web"], { cwd: root });
     if (wantWindows) run("pnpm", ["run", "build:desktop:windows"], { cwd: root });
-    if (wantLinux) run("pnpm", ["run", "build:desktop"], { cwd: root });
+    if (wantLinux) {
+        if (process.platform !== "linux") {
+            console.error("Linux desktop builds must be produced on Linux (pnpm build:desktop).");
+            process.exit(1);
+        }
+        run("pnpm", ["run", "build:desktop"], { cwd: root });
+    }
+    if (wantMac) {
+        if (process.platform !== "darwin") {
+            console.error("macOS desktop builds must be produced on macOS (pnpm build:desktop).");
+            process.exit(1);
+        }
+        run("pnpm", ["run", "build:desktop"], { cwd: root });
+    }
 }
 
 function pushButler(source, target) {
@@ -96,6 +130,19 @@ if (wantLinux) {
     } else {
         assertDesktopBuild(linuxDir, loony.executableName, "linux");
         pushButler(zipDirectory(linuxDir, releaseDir, "desktop-linux"), itchTarget(channels.linux));
+    }
+}
+
+if (wantMac) {
+    const zipPath = join(releaseDir, "desktop-mac.zip");
+    if (dryRun) {
+        pushButler(zipPath, itchTarget(channels.mac));
+    } else {
+        const bundle = assertMacBuild();
+        pushButler(
+            zipAppBundle(bundle, releaseDir, "desktop-mac"),
+            itchTarget(channels.mac)
+        );
     }
 }
 

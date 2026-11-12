@@ -88,6 +88,7 @@ the `<title>` in `index.html`.
 | `pnpm preview` | Serve `dist/` locally |
 | `pnpm build:desktop` | Desktop app for this computer in `build/desktop/` (see below) |
 | `pnpm build:desktop:windows` | Windows app cross-compiled from Linux, in `build/desktop-windows/` |
+| `pnpm build:desktop:mac` | macOS `.app` on Mac (same as `build:desktop` on macOS) |
 | `pnpm build:quest` | Meta Quest APK (see below) |
 | `pnpm typecheck` / `pnpm test` | TypeScript check / unit tests |
 | `pnpm deploy:itch` | Upload web + desktop builds to itch.io (Butler) |
@@ -98,20 +99,21 @@ the `<title>` in `index.html`.
 ### Deploy (itch.io and Steam)
 
 Configure store metadata under `loony` in `package.json`: `loony.itch` (`user`, `game`, optional
-`channels`) and `loony.steam` (`appId`, `depots.windows`, `depots.linux`). Replace the placeholder
+`channels`) and `loony.steam` (`appId`, `depots.windows`, `depots.linux`, `depots.mac`). Replace the placeholder
 username and app ID before running deploy scripts.
 
 **itch.io:** install [Butler](https://itch.io/docs/butler/), set `BUTLER_API_KEY`, then run
-`pnpm deploy:itch` (defaults to web, Windows zip, and Linux zip). Add `--build` to run the matching
-`pnpm build:*` commands first, or `--dry-run` to print planned `butler push` commands. Desktop
-uploads are zips of the whole `build/desktop-windows/` or `build/desktop/` folder (`zip` must be on
-PATH).
+`pnpm deploy:itch` (defaults to web, a Windows zip, and the native desktop build for your OS: Linux
+binary, or macOS `.app` zip on Mac). Add `--build`, `--mac`, `--linux`, or `--windows` to narrow
+targets; macOS and Linux builds must be produced on those operating systems. Use `--dry-run` to print
+planned `butler push` commands. Desktop uploads need `zip` on PATH.
 
 **Steam:** install [steamcmd](https://developer.valvesoftware.com/wiki/SteamCMD) (or set `STEAMCMD`
 to its path). Set `STEAM_USERNAME` and `STEAM_PASSWORD`; if Steam Guard is enabled, also set
 `STEAM_GUARD_CODE` for that login. Run `pnpm deploy:steam:build` to compile and upload both
 depots, or `pnpm deploy:steam --dry-run` to stage files under `steam/staging/` and generate VDFs in
-`steam/generated/` without calling steamcmd. Use `--windows` or `--linux` to upload a single depot.
+`steam/generated/` without calling steamcmd. Use `--windows`, `--linux`, or `--mac` for a single
+depot. macOS depots stage the `.app` bundle built on a Mac.
 
 ## Native builds (Babylon Native)
 
@@ -119,12 +121,15 @@ depots, or `pnpm deploy:steam --dry-run` to stage files under `steam/staging/` a
 Babylon Native hosts. Before the first native build, fetch Babylon Native in the engine:
 `(cd ../loony-engine && git submodule update --init native/external/BabylonNative)`.
 
-**Desktop** (`pnpm build:desktop`): builds the executable for the computer you run it on and
-copies `game.js` and `public/` beside it; ship that whole folder. It needs CMake and a C++20
-compiler: Visual Studio 2022 on Windows; on Linux also the X11 and JavaScriptCore development
-packages (Debian/Ubuntu: `libx11-dev libjavascriptcoregtk-4.1-dev`; Fedora: `libX11-devel
-javascriptcoregtk4.1-devel`). The first build compiles Babylon Native and takes a while. It boots
-the FPS demo (`LOONY_START_MODE=vr` boots the VR one). macOS is planned.
+**Desktop** (`pnpm build:desktop`): builds the executable for the computer you run it on and copies
+`game.js` and `public/` beside it (under `Contents/MacOS/` inside the `.app` on macOS); ship that
+whole folder or bundle. It needs CMake and a C++20 compiler: Visual Studio 2022 on Windows; on Linux
+the X11 and JavaScriptCore development packages (Debian/Ubuntu: `libx11-dev
+libjavascriptcoregtk-4.1-dev`; Fedora: `libX11-devel javascriptcoregtk4.1-devel`); on macOS, Xcode 11+
+and `cmake -G Xcode` (the build script sets this). The first build compiles Babylon Native and takes
+a while. It boots the FPS demo (`LOONY_START_MODE=vr` boots the VR one). On macOS the default is a
+universal `arm64` + `x86_64` app; set `LOONY_MACOS_UNIVERSAL=0` when building for the current
+architecture only.
 
 **Windows from Linux** (`pnpm build:desktop:windows`): cross-compiles the `.exe` with clang-cl. It
 needs LLVM (clang-cl, lld-link, llvm-rc, llvm-lib), Ninja, and the Windows SDK unpacked by

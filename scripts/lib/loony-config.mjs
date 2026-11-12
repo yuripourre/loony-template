@@ -25,7 +25,7 @@ export function assertItchConfig(loony) {
         console.error("Replace loony.itch.user with your itch.io username in package.json.");
         process.exit(1);
     }
-    const channels = itch.channels ?? { web: "html", windows: "windows", linux: "linux" };
+    const channels = itch.channels ?? { web: "html", windows: "windows", linux: "linux", mac: "mac" };
     return { ...itch, channels };
 }
 
