@@ -1,0 +1,15 @@
+"AppBuild"
+{
+	"appid" "@@APP_ID@@"
+	"desc" "Loony game build"
+	"buildoutput" "../output"
+	"contentroot" ""
+	"setlive" ""
+	"preview" "0"
+	"local" ""
+	"depots"
+	{
+		"@@DEPOT_WINDOWS@@" "depot_build_windows.vdf"
+		"@@DEPOT_LINUX@@" "depot_build_linux.vdf"
+	}
+}

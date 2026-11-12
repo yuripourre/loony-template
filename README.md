@@ -90,6 +90,28 @@ the `<title>` in `index.html`.
 | `pnpm build:desktop:windows` | Windows app cross-compiled from Linux, in `build/desktop-windows/` |
 | `pnpm build:quest` | Meta Quest APK (see below) |
 | `pnpm typecheck` / `pnpm test` | TypeScript check / unit tests |
+| `pnpm deploy:itch` | Upload web + desktop builds to itch.io (Butler) |
+| `pnpm deploy:itch:web` / `deploy:itch:desktop` | Upload only the web or desktop channels |
+| `pnpm deploy:steam` | Stage desktop builds and upload Steam depots (steamcmd) |
+| `pnpm deploy:steam:build` | Build desktop targets, then upload to Steam |
+
+### Deploy (itch.io and Steam)
+
+Configure store metadata under `loony` in `package.json`: `loony.itch` (`user`, `game`, optional
+`channels`) and `loony.steam` (`appId`, `depots.windows`, `depots.linux`). Replace the placeholder
+username and app ID before running deploy scripts.
+
+**itch.io:** install [Butler](https://itch.io/docs/butler/), set `BUTLER_API_KEY`, then run
+`pnpm deploy:itch` (defaults to web, Windows zip, and Linux zip). Add `--build` to run the matching
+`pnpm build:*` commands first, or `--dry-run` to print planned `butler push` commands. Desktop
+uploads are zips of the whole `build/desktop-windows/` or `build/desktop/` folder (`zip` must be on
+PATH).
+
+**Steam:** install [steamcmd](https://developer.valvesoftware.com/wiki/SteamCMD) (or set `STEAMCMD`
+to its path). Set `STEAM_USERNAME` and `STEAM_PASSWORD`; if Steam Guard is enabled, also set
+`STEAM_GUARD_CODE` for that login. Run `pnpm deploy:steam:build` to compile and upload both
+depots, or `pnpm deploy:steam --dry-run` to stage files under `steam/staging/` and generate VDFs in
+`steam/generated/` without calling steamcmd. Use `--windows` or `--linux` to upload a single depot.
 
 ## Native builds (Babylon Native)
 

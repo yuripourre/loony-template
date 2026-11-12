@@ -1,0 +1,11 @@
+"DepotBuild"
+{
+	"DepotID" "@@DEPOT_WINDOWS@@"
+	"ContentRoot" "../staging/windows"
+	"FileMapping"
+	{
+		"LocalPath" "*"
+		"DepotPath" "."
+		"recursive" "1"
+	}
+}

@@ -6,7 +6,23 @@
     "loony": {
         "title": "My Loony Game",
         "appId": "com.example.myloonygame",
-        "executableName": "MyLoonyGame"
+        "executableName": "MyLoonyGame",
+        "itch": {
+            "user": "your-itch-username",
+            "game": "my-loony-game",
+            "channels": {
+                "web": "html",
+                "windows": "windows",
+                "linux": "linux"
+            }
+        },
+        "steam": {
+            "appId": "000000",
+            "depots": {
+                "windows": "000001",
+                "linux": "000002"
+            }
+        }
     },
     "type": "module",
     "packageManager": "pnpm@10.33.2",
@@ -23,7 +39,12 @@
         "build:quest": "node scripts/build-quest.mjs",
         "typecheck": "tsc --noEmit",
         "test": "vitest run",
-        "build:native": "vite build --config vite.native.config.ts"
+        "build:native": "vite build --config vite.native.config.ts",
+        "deploy:itch": "node scripts/deploy-itch.mjs",
+        "deploy:itch:web": "node scripts/deploy-itch.mjs --web",
+        "deploy:itch:desktop": "node scripts/deploy-itch.mjs --windows --linux",
+        "deploy:steam": "node scripts/deploy-steam.mjs",
+        "deploy:steam:build": "node scripts/deploy-steam.mjs --build"
     },
     "dependencies": {
         "@babylonjs/core": "^9.35.0",

@@ -2,5 +2,8 @@ node_modules/
 dist/
 dist-native/
 build/
+steam/staging/
+steam/generated/
+steam/output/
 *.log
 .DS_Store
